@@ -15,7 +15,8 @@ builder.Services.AddControllers();
 //Especifica que o contexto de banco de dados usará um banco de dados 
 //em memória.
 //A String passada na Option é o nome que dei ao BD em Memória.
-builder.Services.AddDbContext<VendedorContext>(opt =>
+//Serviço para Venda.
+builder.Services.AddDbContext<VendaContext>(opt =>
     opt.UseInMemoryDatabase("TechTestPaymentApi"));
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
