@@ -2,10 +2,10 @@ namespace tech_test_payment_api.Models
 {
     public enum EnumStatus
     {
-        AguardandoPagamento,
+        AguardandoPagamento =1,
         PagamentoAprovado,
-        Cancelada,
         EnviandoParaTransportadora,
-        Entregue
+        Entregue,
+        Cancelada
     }
 }

@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using tech_test_payment_api.Models;
@@ -19,18 +14,10 @@ namespace tech_test_payment_api.Controllers
         {
             _context = context;
         }
-
-        // GET: api/Venda
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Venda>>> GetVendas()
-        {
-
-            return await _context.Vendas.ToListAsync();
-        }
-
+        
         // GET: api/Venda/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Venda>> GetVenda(int id)
+        public async Task<ActionResult<Venda>> BuscarVenda(int id)
         {
 
             //Busca a Venda
@@ -76,14 +63,59 @@ namespace tech_test_payment_api.Controllers
         // PUT: api/Venda/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutVenda(int id, Venda venda)
+        public async Task<IActionResult> AtualizarVenda(int id, Venda venda)
         {
             if (id != venda.Id)
             {
                 return BadRequest();
             }
 
-            _context.Entry(venda).State = EntityState.Modified;
+            //Busca Venda do BD
+            var vendaBanco = _context.Vendas.FindAsync(id).Result;
+            if (vendaBanco == null)
+            {
+                return NotFound();
+            }
+
+            //Verifica o Status Informado.
+            switch (vendaBanco.Status)
+            {
+                case EnumStatus.AguardandoPagamento:
+                     if (venda.Status != EnumStatus.PagamentoAprovado && venda.Status != EnumStatus.Cancelada)
+                        return BadRequest(new { Erro = "Para vendas que estão Aguardando Pagamento, " + 
+                                                        "só é possível Aprovar o pagamento ou Cancelar a venda." });
+                break;
+                case EnumStatus.PagamentoAprovado:
+                     if (venda.Status != EnumStatus.EnviandoParaTransportadora && venda.Status != EnumStatus.Cancelada)
+                        return BadRequest(new { Erro = "Para vendas que tiveram o Pagamento Aprovado, " +
+                                                        "só é possível Enviar para Transportadora ou Cancelar a venda." });                              
+                break;
+                case EnumStatus.EnviandoParaTransportadora:
+                     if (venda.Status != EnumStatus.Entregue)
+                        return BadRequest(new { Erro = "Para vendas que foram Enviadas para Transportadora, " +
+                                                        "só é possível Enviar para Transportadora ou Cancelar a venda." });                              
+                break;
+                case EnumStatus.Entregue:
+                    return BadRequest(new { Erro = "Os itens dessa Venda já foram entregues e a Venda finalizada, " +
+                                                        "Não é possivel altera-la." });                              
+                break;
+                case EnumStatus.Cancelada:
+                    return BadRequest(new { Erro = "Esta Venda foi Cancelada, " +
+                                                        "Não é possivel altera-la." });                              
+                break;
+            }
+
+           
+           vendaBanco.IdVendedor = venda.IdVendedor;
+           vendaBanco.Vendedor = venda.Vendedor;
+           vendaBanco.ItensDaVenda = venda.ItensDaVenda;
+           vendaBanco.Total = venda.Total;
+           vendaBanco.Status = venda.Status;
+           vendaBanco.Data = venda.Data;
+
+           _context.Vendas.Update(vendaBanco);
+            //_context.Entry(venda).State = EntityState.Modified;
+           
 
             try
             {
@@ -107,30 +139,21 @@ namespace tech_test_payment_api.Controllers
         // POST: api/Venda
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Venda>> PostVenda(Venda venda)
+        public async Task<ActionResult<Venda>> RegistrarVenda(Venda venda)
         {
          
             _context.Vendas.Add(venda);
-            await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetVenda", new { id = venda.Id }, venda);
-        }
-
-        // DELETE: api/Venda/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteVenda(int id)
-        {
-            var venda = await _context.Vendas.FindAsync(id);
-            if (venda == null)
+            if (venda.Status != EnumStatus.AguardandoPagamento)
             {
-                return NotFound();
+                return BadRequest(new { Erro = "Deve ser definido 'Aguardando Pagamento' para novas Vendas." });   
             }
-
-            _context.Vendas.Remove(venda);
+           
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return CreatedAtAction(nameof(BuscarVenda), new { id = venda.Id }, venda);
         }
+
 
         private bool VendaExists(int id)
         {

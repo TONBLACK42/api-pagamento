@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace tech_test_payment_api.Models
 {
@@ -17,7 +13,7 @@ namespace tech_test_payment_api.Models
         [Range(1,10000)]
         public int IdVendedor { get; set; }
 
-        [Required(ErrorMessage ="Vendedor não pode ser nulo!")]
+        //[Required(ErrorMessage ="Vendedor não pode ser nulo!")]
         public Vendedor Vendedor { get; set; }
 
         [Required(ErrorMessage ="Item da Venda não pode ser nulo!")]
@@ -27,7 +23,7 @@ namespace tech_test_payment_api.Models
         [DisplayFormat(DataFormatString = "{0,c}")]
         public double Total { get; set; }
 
-        [Required(ErrorMessage ="Status não pode ser nulo!")]
+        //[Required(ErrorMessage ="Status não pode ser nulo!")]
         public EnumStatus Status { get; set; }
 
         [Required(ErrorMessage ="Data não pode ser nulo!")]

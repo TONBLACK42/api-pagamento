@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace tech_test_payment_api.Models
 {
@@ -26,7 +22,6 @@ namespace tech_test_payment_api.Models
         [Required(ErrorMessage ="Valor não pode ser nulo!")]
         [DisplayFormat(DataFormatString = "{0,c}")]
         public double Valor { get; set; }
-        
 
     }
 }
