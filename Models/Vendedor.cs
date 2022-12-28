@@ -4,8 +4,6 @@ namespace tech_test_payment_api.Models
 {
     public class Vendedor
     { 
-        [Required(ErrorMessage ="Id não pode ser nulo!")]
-        [Range(1,10000)]
         public int Id { get; set; }
         
         [Required(ErrorMessage ="por favor informe um nome.",AllowEmptyStrings =false)]
@@ -22,5 +20,9 @@ namespace tech_test_payment_api.Models
         [Required(ErrorMessage ="Por favor informe um e-mail.", AllowEmptyStrings =false)]
         [Phone(ErrorMessage ="Telefone Invalido!")]
         public string Telefone { get; set; }
+
+        public int VendaID { get; set; }
+        
+        //public virtual Venda Venda {get; set;}
     }
 }

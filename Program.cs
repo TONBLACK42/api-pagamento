@@ -4,12 +4,18 @@
 
 using Microsoft.EntityFrameworkCore; //Adicionei para Registro do Contexto
 using tech_test_payment_api.Models; //Adicionei para Registro do Contexto
+using Microsoft.OpenApi.Models; //Para Personalizar e Estender o Swagger.
+using System.Text.Json.Serialization;// Para Converter Enum Inteiro em String.
+using System.Reflection; // Usa Reflections para Configure o Swagger para usar o arquivo XML
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(opt => 
+{
+    opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); //Convert Enum Iteiro para String no Swagger.
+});
 
 //Adiciona o contexto de banco de dados ao contêiner de DI.
 //Especifica que o contexto de banco de dados usará um banco de dados 
@@ -21,15 +27,51 @@ builder.Services.AddDbContext<VendaContext>(opt =>
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+
+builder.Services.AddSwaggerGen(opt => 
+{
+    //Documenta Cabeçalho da API no Swagger.
+    opt.SwaggerDoc("v1", new OpenApiInfo
+    {
+            Version = "v1",
+            Title = "PAYMENT API",
+            Description = "Web API ASP .NET 6 para gerenciar Vendas.",
+            Contact = new OpenApiContact
+            {
+                Name = "Ailton Alves da Silva",
+                Url = new Uri("https://www.linkedin.com/in/ailton-alves-da-silva"),
+                Email = "ailton_as@hotmail.com",
+                
+            }
+    });
+
+    // Usa Reflections para Configure o Swagger para usar Documentação XML
+    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+	
+	if (File.Exists(xmlPath))
+	{
+			opt.IncludeXmlComments(xmlPath);
+	}
+
+});
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwagger(options => 
+    {
+        options.RouteTemplate = "api-docs/swagger/{documentName}/swagger.json"; //Definindo Rota para Documentação Swagger. Altera Link abaixo do titulo na UI.
+    });
+    app.UseSwaggerUI(options =>
+    {
+        options.RoutePrefix = "api-docs/swagger"; //Definindo Rota para Documentação Swagger.
+
+        options.SwaggerEndpoint("/api-docs/swagger/v1/swagger.json", "API de Vendas");
+
+    });
 }
 
 app.UseHttpsRedirection();

@@ -15,66 +15,53 @@ namespace tech_test_payment_api.Controllers
             _context = context;
         }
         
-        // GET: api/Venda/5
+        ///<summary>
+        /// Busca Venda por ID.
+        ///</summary>
+        ///<param name="id"></param>
+        /// <returns>A Venda Completa com seus Itens e dados do Vendedor.</returns>
+        /// <response code="200">Retorna Venda e seus Items cadastrados.</response>
+        /// <response code="404">Quando a Venda ou seus Itens não são encontrados.</response>
         [HttpGet("{id}")]
         public async Task<ActionResult<Venda>> BuscarVenda(int id)
         {
 
             //Busca a Venda
-            var venda = await _context.Vendas.FindAsync(id);
+            //Utilizando EF com carregamento Ansioso de Vários níveis
+            var venda = _context.Vendas
+                                .Where(v => v.Id == id)
+                                .Include(vendedor => vendedor.Vendedores)
+                                .Include("ItensDaVenda.Produto")
+                                .FirstOrDefault();
             if (venda == null)
             {
-                return NotFound();
-            }
-
-            //Busca o Vendedor
-            var vendedor = _context.Vendedores.FindAsync(venda.IdVendedor);
-            if (vendedor == null)
-            {
-                return NotFound();
-            }
-            venda.Vendedor = vendedor.Result;
-
-             //Busca os Itens
-            var itensDaVenda = _context.ItensDaVenda.Where(x => x.idVenda==id);
-            if (itensDaVenda == null)
-            {
-                return NotFound();
-            }
-            venda.ItensDaVenda = itensDaVenda.ToList();
-
-            //Busca o Produto
-            foreach (var item in venda.ItensDaVenda)
-            {
-                //Busca o Produto
-                var produto = _context.Produtos.FindAsync(item.iProduto);
-                if (produto == null)
-                {
-                    return NotFound();
-                }
-
-                item.Produto = produto.Result; 
-                //venda.ItensDaVenda. = vendedor.Result;
-            }
+                return NotFound(new {Erro = $"Não foi encontrada nenhuma venda com id {id}. Favor verificar se o mesmo esta correto."});
+            }   
             
             return venda;
         }
 
-        // PUT: api/Venda/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        ///<summary>
+        /// Altera a  Venda pelo ID indicado.
+        ///</summary>
+        ///<param name="id"></param>
+        /// <returns>Altera a Venda Completa com seus Itens e dados do Vendedor.</returns>
+        /// <response code="204">Quando a Venda é atualizada com Sucesso.</response>
+        /// <response code="404">Quando a Venda ou seus Itens não são encontrados.</response>
+        /// <response code="400">Quando ocorre algum problema ao Alterar a Venda ou seus Itens ou alguma Regra de Negócio é infrigida.</response>
         [HttpPut("{id}")]
         public async Task<IActionResult> AtualizarVenda(int id, Venda venda)
         {
             if (id != venda.Id)
             {
-                return BadRequest();
+                return BadRequest(new {Erro = $"O Id {id} informado não é válido!"});
             }
 
             //Busca Venda do BD
             var vendaBanco = _context.Vendas.FindAsync(id).Result;
             if (vendaBanco == null)
             {
-                return NotFound();
+                return NotFound(new {Erro = $"Venda não encontrada para o Id {id}."});
             }
 
             //Verifica o Status Informado.
@@ -98,24 +85,21 @@ namespace tech_test_payment_api.Controllers
                 case EnumStatus.Entregue:
                     return BadRequest(new { Erro = "Os itens dessa Venda já foram entregues e a Venda finalizada, " +
                                                         "Não é possivel altera-la." });                              
-                break;
+                //break;
                 case EnumStatus.Cancelada:
-                    return BadRequest(new { Erro = "Esta Venda foi Cancelada, " +
-                                                        "Não é possivel altera-la." });                              
-                break;
+                    return BadRequest(new { Erro = "Esta Venda foi Cancelada, Não é possivel altera-la." });                              
+               // break;
             }
 
-           
-           vendaBanco.IdVendedor = venda.IdVendedor;
-           vendaBanco.Vendedor = venda.Vendedor;
+           //Caso O Status esteja correto, atualiza a Venda com o novo Status.
+           vendaBanco.Vendedores = venda.Vendedores;
            vendaBanco.ItensDaVenda = venda.ItensDaVenda;
            vendaBanco.Total = venda.Total;
            vendaBanco.Status = venda.Status;
            vendaBanco.Data = venda.Data;
 
+            //Atualiza a Venda.
            _context.Vendas.Update(vendaBanco);
-            //_context.Entry(venda).State = EntityState.Modified;
-           
 
             try
             {
@@ -125,7 +109,7 @@ namespace tech_test_payment_api.Controllers
             {
                 if (!VendaExists(id))
                 {
-                    return NotFound();
+                    return NotFound(new {Erro = $"Venda não encontrada para o Id {id}."});
                 }
                 else
                 {
@@ -136,8 +120,51 @@ namespace tech_test_payment_api.Controllers
             return NoContent();
         }
 
-        // POST: api/Venda
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        ///<summary>
+        /// Inclui uma nova venda, com informações do Vendedor e Itens da Venda e seu produto.
+        ///</summary>
+        ///<param name="venda"></param>
+        /// <returns>A Venda em si, com sesu dados associados de Vendedor, Itens e Produto.</returns>
+        /// <remarks>
+        /// Exemplo de Preenchimento:
+        ///
+        ///     POST /Venda
+        ///      {
+        ///          "id": 0,
+        ///          "vendedores": 
+        ///          {
+        ///              "id": 0,
+        ///              "nome": "Vendedor 01",
+        ///              "cpf": "111.222.333-44",
+        ///              "email": "user@example.com",
+        ///              "telefone": "5454-5445",
+        ///              "vendaID": 0
+        ///          },
+        ///          "itensDaVenda": 
+        ///          [
+        ///              {
+        ///                  "id": 0,
+        ///                  "quantidade": 2,
+        ///                  "valor": 12600.00,
+        ///                  "vendaID": 0,
+        ///                  "produto": 
+        ///                  {
+        ///                      "id": 0,
+        ///                      "nome": "Seguro Residencial",
+        ///                      "quantidade": 100,
+        ///                      "valor": 6300.00
+        ///                  }
+        ///               }
+        ///          ],
+        ///          "total": 12300.00,
+        ///          "status": "AguardandoPagamento",
+        ///          "data": "2022-12-28T20:21:38.819Z"
+        ///      }
+        ///
+        /// </remarks>
+        /// <response code="201">Retorna Venda e seus Items que acabaram de ser cadastrados.</response>
+        /// <response code="400">Quando Ocorre algum erro com a Venda ou seus Itens ou alguma regra de negócio é infrigida.</response>
+       
         [HttpPost]
         public async Task<ActionResult<Venda>> RegistrarVenda(Venda venda)
         {
@@ -146,7 +173,7 @@ namespace tech_test_payment_api.Controllers
 
             if (venda.Status != EnumStatus.AguardandoPagamento)
             {
-                return BadRequest(new { Erro = "Deve ser definido 'Aguardando Pagamento' para novas Vendas." });   
+                return BadRequest(new { Erro = "Novas Vendas devem ser definidas como, 'Aguardando Pagamento'." });   
             }
            
             await _context.SaveChangesAsync();

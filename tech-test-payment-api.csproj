@@ -5,6 +5,11 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>tech_test_payment_api</RootNamespace>
+
+    <!--Habilita Documentação XML inclusive para usar no Swagger-->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!--Suprime mensagem de aviso gerada por abilitação de documentação XML-->
+    <NoWarn>$(NoWarn);1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
