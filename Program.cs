@@ -11,11 +11,13 @@ using System.Reflection; // Usa Reflections para Configure o Swagger para usar o
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers().AddJsonOptions(opt => 
 {
     opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()); //Convert Enum Iteiro para String no Swagger.
-});
+    
+})
+.AddNewtonsoftJson(); //substitui os formatadores de entrada e saída baseados em padrão System.Text.Jsonusados.
+
 
 //Adiciona o contexto de banco de dados ao contêiner de DI.
 //Especifica que o contexto de banco de dados usará um banco de dados 
@@ -43,7 +45,14 @@ builder.Services.AddSwaggerGen(opt =>
                 Email = "ailton_as@hotmail.com",
                 
             }
-    });
+    }
+    );
+
+    //Habilita Anotações para Swagger inclusive Schema Filters.
+    opt.EnableAnnotations();
+
+    //Define Schema de Exemplo Customizado.
+    opt.SchemaFilter<AddSchemaExample>();
 
     // Usa Reflections para Configure o Swagger para usar Documentação XML
     var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";

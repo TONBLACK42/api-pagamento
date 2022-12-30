@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using tech_test_payment_api.Models;
 
+using Microsoft.AspNetCore.JsonPatch; //Adicionei para usar HttpPatch
+
 namespace tech_test_payment_api.Controllers
 {
     [Route("api/[controller]")]
@@ -23,6 +25,8 @@ namespace tech_test_payment_api.Controllers
         /// <response code="200">Retorna Venda e seus Items cadastrados.</response>
         /// <response code="404">Quando a Venda ou seus Itens não são encontrados.</response>
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Venda>> BuscarVenda(int id)
         {
 
@@ -35,21 +39,112 @@ namespace tech_test_payment_api.Controllers
                                 .FirstOrDefault();
             if (venda == null)
             {
-                return NotFound(new {Erro = $"Não foi encontrada nenhuma venda com id {id}. Favor verificar se o mesmo esta correto."});
+                return NotFound(new {Erro = $"Não foi encontrada nenhuma venda com id {id}."});
             }   
             
             return venda;
         }
 
-        ///<summary>
+        /// <summary>
+        /// Permite alterar somente o Status da Venda informada pelo ID.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="status"></param>
+        /// <param name="venda">Aqui representada somente pelo campo a ser alterado.</param>
+        /// <returns>A Venda Completa com seus Itens e dados do Vendedor.</returns>
+        /// <remarks>
+        ///
+        /// Exemplo de Preenchimento:
+        ///
+        ///     PATCH /Venda
+        ///         [
+        ///             {
+        ///                 "op": "Replace",    
+        ///                 "path": "/status",
+        ///                 "value": 2 ou "PagamentoAprovado"
+        ///             }
+        ///         ]
+        ///
+        /// </remarks>
+        /// <response code="204">Quando a Venda é atualizada com Sucesso.</response>
+        /// <response code="404">Quando a Venda ou seus Itens não são encontrados.</response>
+        /// <response code="400">Quando ocorre algum problema ao Alterar a Venda ou seus Itens ou alguma Regra de Negócio é infrigida.</response>
+        [HttpPatch("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AttualizarStatusDaVenda(int id, EnumStatus status, [FromBody] JsonPatchDocument<Venda> venda)
+        {
+            if (venda == null)
+            {
+                return BadRequest();
+            }
+
+            var bancoVenda = _context.Vendas
+                                .Where(v => v.Id == id)
+                                .Include(vendedor => vendedor.Vendedores)
+                                .Include("ItensDaVenda.Produto")
+                                .FirstOrDefault();
+            
+            if (bancoVenda == null)
+            {
+                return NotFound(new {Erro = $"Venda não encontrada para o Id {id}."});
+            }
+           
+            //Verifica o Status Informado.
+            switch (bancoVenda.Status)
+            {
+                case EnumStatus.AguardandoPagamento:
+                     if (status != EnumStatus.PagamentoAprovado && status != EnumStatus.Cancelada)
+                        return BadRequest(new { Erro = "Para vendas que estão Aguardando Pagamento, " + 
+                                                        "só é possível Aprovar o pagamento ou Cancelar a venda." });
+                break;
+                case EnumStatus.PagamentoAprovado:
+                     if (status != EnumStatus.EnviandoParaTransportadora && status != EnumStatus.Cancelada)
+                        return BadRequest(new { Erro = "Para vendas que tiveram o Pagamento Aprovado, " +
+                                                        "só é possível Enviar para Transportadora ou Cancelar a venda." });                              
+                break;
+                case EnumStatus.EnviandoParaTransportadora:
+                     if (status != EnumStatus.Entregue)
+                        return BadRequest(new { Erro = "Para vendas que foram Enviadas para Transportadora, " +
+                                                        "só é possível Enviar para Transportadora ou Cancelar a venda." });                              
+                break;
+                case EnumStatus.Entregue:
+                    return BadRequest(new { Erro = "Os itens dessa Venda já foram entregues e a Venda finalizada, " +
+                                                        "Não é possivel altera-la." });                              
+                //break;
+                case EnumStatus.Cancelada:
+                    return BadRequest(new { Erro = "Esta Venda foi Cancelada, Não é possivel altera-la." });                              
+               // break;
+            }
+
+             venda.ApplyTo(bancoVenda, ModelState);
+
+             var isValid = TryValidateModel(bancoVenda);
+            if (!isValid)
+            {
+                return BadRequest(ModelState);
+            }
+            await _context.SaveChangesAsync();
+            
+            return NoContent();
+
+        }
+
+
+
+        /// <summary>
         /// Altera a  Venda pelo ID indicado.
-        ///</summary>
-        ///<param name="id"></param>
-        /// <returns>Altera a Venda Completa com seus Itens e dados do Vendedor.</returns>
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="venda">Aqui representada a Venda a ser alterada.</param>
         /// <response code="204">Quando a Venda é atualizada com Sucesso.</response>
         /// <response code="404">Quando a Venda ou seus Itens não são encontrados.</response>
         /// <response code="400">Quando ocorre algum problema ao Alterar a Venda ou seus Itens ou alguma Regra de Negócio é infrigida.</response>
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> AtualizarVenda(int id, Venda venda)
         {
             if (id != venda.Id)
@@ -120,10 +215,10 @@ namespace tech_test_payment_api.Controllers
             return NoContent();
         }
 
-        ///<summary>
+        /// <summary>
         /// Inclui uma nova venda, com informações do Vendedor e Itens da Venda e seu produto.
-        ///</summary>
-        ///<param name="venda"></param>
+        /// </summary>
+        /// <param name="venda"></param>
         /// <returns>A Venda em si, com sesu dados associados de Vendedor, Itens e Produto.</returns>
         /// <remarks>
         /// Exemplo de Preenchimento:
@@ -166,6 +261,8 @@ namespace tech_test_payment_api.Controllers
         /// <response code="400">Quando Ocorre algum erro com a Venda ou seus Itens ou alguma regra de negócio é infrigida.</response>
        
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<Venda>> RegistrarVenda(Venda venda)
         {
          
