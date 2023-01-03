@@ -3,10 +3,13 @@
 // O contêiner fornece o serviço aos controladores.
 
 using Microsoft.EntityFrameworkCore; //Adicionei para Registro do Contexto
-using tech_test_payment_api.Models; //Adicionei para Registro do Contexto
+using tech_test_payment_api.Context; //Adicionei para Registro do Contexto
 using Microsoft.OpenApi.Models; //Para Personalizar e Estender o Swagger.
 using System.Text.Json.Serialization;// Para Converter Enum Inteiro em String.
 using System.Reflection; // Usa Reflections para Configure o Swagger para usar o arquivo XML
+using tech_test_payment_api.Models; //Permite usar a Classe AddShemaExample para alterar modelo esquema do request.
+using tech_test_payment_api.Repository.Interfaces;
+using tech_test_payment_api.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +20,11 @@ builder.Services.AddControllers().AddJsonOptions(opt =>
     
 })
 .AddNewtonsoftJson(); //substitui os formatadores de entrada e saída baseados em padrão System.Text.Jsonusados.
+
+//Adiciona e Configura DI para implementação de padrão Repositório
+builder.Services.AddScoped<IBaseRepository, BaseRepository>();
+builder.Services.AddScoped<IVendaRepository, VendaRepository>();
+
 
 
 //Adiciona o contexto de banco de dados ao contêiner de DI.

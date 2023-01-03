@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using tech_test_payment_api.Models;
 
 using Microsoft.AspNetCore.JsonPatch; //Adicionei para usar HttpPatch
+using tech_test_payment_api.Repository.Interfaces; //Adicionada para Padrão Repositorio
 
 namespace tech_test_payment_api.Controllers
 {
@@ -10,11 +11,11 @@ namespace tech_test_payment_api.Controllers
     [ApiController]
     public class VendaController : ControllerBase
     {
-        private readonly VendaContext _context;
+        private readonly IVendaRepository _repository;
 
-        public VendaController(VendaContext context)
+        public VendaController(IVendaRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
         
         ///<summary>
@@ -30,13 +31,7 @@ namespace tech_test_payment_api.Controllers
         public async Task<ActionResult<Venda>> BuscarVenda(int id)
         {
 
-            //Busca a Venda
-            //Utilizando EF com carregamento Ansioso de Vários níveis
-            var venda = _context.Vendas
-                                .Where(v => v.Id == id)
-                                .Include(vendedor => vendedor.Vendedores)
-                                .Include("ItensDaVenda.Produto")
-                                .FirstOrDefault();
+            var venda = await _repository.GetByIdAsync(id);
             if (venda == null)
             {
                 return NotFound(new {Erro = $"Não foi encontrada nenhuma venda com id {id}."});
@@ -80,11 +75,7 @@ namespace tech_test_payment_api.Controllers
                 return BadRequest();
             }
 
-            var bancoVenda = _context.Vendas
-                                .Where(v => v.Id == id)
-                                .Include(vendedor => vendedor.Vendedores)
-                                .Include("ItensDaVenda.Produto")
-                                .FirstOrDefault();
+            var bancoVenda = await _repository.GetByIdAsync(id);
             
             if (bancoVenda == null)
             {
@@ -125,7 +116,7 @@ namespace tech_test_payment_api.Controllers
             {
                 return BadRequest(ModelState);
             }
-            await _context.SaveChangesAsync();
+            await _repository.SaveChangesAsync();
             
             return NoContent();
 
@@ -153,7 +144,7 @@ namespace tech_test_payment_api.Controllers
             }
 
             //Busca Venda do BD
-            var vendaBanco = _context.Vendas.FindAsync(id).Result;
+            var vendaBanco = await _repository.GetByIdAsync(id);
             if (vendaBanco == null)
             {
                 return NotFound(new {Erro = $"Venda não encontrada para o Id {id}."});
@@ -194,22 +185,15 @@ namespace tech_test_payment_api.Controllers
            vendaBanco.Data = venda.Data;
 
             //Atualiza a Venda.
-           _context.Vendas.Update(vendaBanco);
+            _repository.Update(vendaBanco);
 
             try
             {
-                await _context.SaveChangesAsync();
+                await _repository.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!VendaExists(id))
-                {
-                    return NotFound(new {Erro = $"Venda não encontrada para o Id {id}."});
-                }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
 
             return NoContent();
@@ -266,22 +250,18 @@ namespace tech_test_payment_api.Controllers
         public async Task<ActionResult<Venda>> RegistrarVenda(Venda venda)
         {
          
-            _context.Vendas.Add(venda);
-
             if (venda.Status != EnumStatus.AguardandoPagamento)
             {
                 return BadRequest(new { Erro = "Novas Vendas devem ser definidas como, 'Aguardando Pagamento'." });   
             }
+
+            _repository.Add(venda);
+
            
-            await _context.SaveChangesAsync();
+            await _repository.SaveChangesAsync();
 
             return CreatedAtAction(nameof(BuscarVenda), new { id = venda.Id }, venda);
         }
-
-
-        private bool VendaExists(int id)
-        {
-            return _context.Vendas.Any(e => e.Id == id);
-        }
+       
     }
 }

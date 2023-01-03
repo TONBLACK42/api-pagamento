@@ -21,8 +21,6 @@ namespace tech_test_payment_api.Models
         [Phone(ErrorMessage ="Telefone Invalido!")]
         public string Telefone { get; set; }
 
-        public int VendaID { get; set; }
-        
-        //public virtual Venda Venda {get; set;}
+        public int VendaID { get; set; }       
     }
 }
