@@ -1,6 +1,6 @@
-using tech_test_payment_api.Models;
+using tech_test_payment_api.Payment.Api.Models;
 
-namespace tech_test_payment_api.Repository.Interfaces
+namespace tech_test_payment_api.Payment.Api.Repository.Interfaces
 {
     public interface IVendaRepository : IBaseRepository
     {

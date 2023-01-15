@@ -3,13 +3,13 @@
 // O contêiner fornece o serviço aos controladores.
 
 using Microsoft.EntityFrameworkCore; //Adicionei para Registro do Contexto
-using tech_test_payment_api.Context; //Adicionei para Registro do Contexto
+using tech_test_payment_api.Payment.Api.Context; //Adicionei para Registro do Contexto
 using Microsoft.OpenApi.Models; //Para Personalizar e Estender o Swagger.
 using System.Text.Json.Serialization;// Para Converter Enum Inteiro em String.
 using System.Reflection; // Usa Reflections para Configure o Swagger para usar o arquivo XML
-using tech_test_payment_api.Models; //Permite usar a Classe AddShemaExample para alterar modelo esquema do request.
-using tech_test_payment_api.Repository.Interfaces;
-using tech_test_payment_api.Repository;
+using tech_test_payment_api.Payment.Api.Models; //Permite usar a Classe AddShemaExample para alterar modelo esquema do request.
+using tech_test_payment_api.Payment.Api.Repository.Interfaces;
+using tech_test_payment_api.Payment.Api.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 

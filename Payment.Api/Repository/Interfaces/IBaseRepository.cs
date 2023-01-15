@@ -1,4 +1,4 @@
-namespace tech_test_payment_api.Repository.Interfaces
+namespace tech_test_payment_api.Payment.Api.Repository.Interfaces
 {
     public interface IBaseRepository
     {

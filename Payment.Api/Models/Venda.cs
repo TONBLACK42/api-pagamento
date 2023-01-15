@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace tech_test_payment_api.Models
+namespace tech_test_payment_api.Payment.Api.Models
 {
     public class Venda
     {

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using tech_test_payment_api.Models;
+using tech_test_payment_api.Payment.Api.Models;
 
-namespace tech_test_payment_api.Context
+namespace tech_test_payment_api.Payment.Api.Context
 {
     //O contexto de banco de dados é a classe principal que coordena a 
     //funcionalidade do Entity Framework para um modelo de dados. 

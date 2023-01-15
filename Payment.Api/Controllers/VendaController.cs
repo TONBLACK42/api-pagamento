@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using tech_test_payment_api.Models;
+using tech_test_payment_api.Payment.Api.Models;
 
 using Microsoft.AspNetCore.JsonPatch; //Adicionei para usar HttpPatch
-using tech_test_payment_api.Repository.Interfaces; //Adicionada para Padrão Repositorio
+using tech_test_payment_api.Payment.Api.Repository.Interfaces; //Adicionada para Padrão Repositorio
+using Newtonsoft.Json;
 
-namespace tech_test_payment_api.Controllers
+namespace tech_test_payment_api.Payment.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -68,7 +69,7 @@ namespace tech_test_payment_api.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AttualizarStatusDaVenda(int id, EnumStatus status, [FromBody] JsonPatchDocument<Venda> venda)
+        public async Task<IActionResult> AttualizarStatusDaVenda(int id,[FromBody] JsonPatchDocument<Venda> venda)
         {
             if (venda == null)
             {
@@ -81,12 +82,17 @@ namespace tech_test_payment_api.Controllers
             {
                 return NotFound(new {Erro = $"Venda não encontrada para o Id {id}."});
             }
-           
+
+            EnumStatus status = (EnumStatus)venda.Operations[0].value;
+            //var vendaSerialized = JsonConvert.SerializeObject(venda);
+            //var vendaDeserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(vendaSerialized);
+
+                       
             //Verifica o Status Informado.
             switch (bancoVenda.Status)
             {
                 case EnumStatus.AguardandoPagamento:
-                     if (status != EnumStatus.PagamentoAprovado && status != EnumStatus.Cancelada)
+                     if ( status != EnumStatus.PagamentoAprovado && status != EnumStatus.Cancelada)
                         return BadRequest(new { Erro = "Para vendas que estão Aguardando Pagamento, " + 
                                                         "só é possível Aprovar o pagamento ou Cancelar a venda." });
                 break;
@@ -249,6 +255,10 @@ namespace tech_test_payment_api.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<Venda>> RegistrarVenda(Venda venda)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
          
             if (venda.Status != EnumStatus.AguardandoPagamento)
             {
