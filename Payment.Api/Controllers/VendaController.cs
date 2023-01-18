@@ -26,7 +26,7 @@ namespace tech_test_payment_api.Payment.Api.Controllers
         /// <returns>A Venda Completa com seus Itens e dados do Vendedor.</returns>
         /// <response code="200">Retorna Venda e seus Items cadastrados.</response>
         /// <response code="404">Quando a Venda ou seus Itens não são encontrados.</response>
-        [HttpGet("{id}")]
+        [HttpGet("buscarvenda/{id}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Venda>> BuscarVenda(int id)
@@ -45,7 +45,6 @@ namespace tech_test_payment_api.Payment.Api.Controllers
         /// Permite alterar somente o Status da Venda informada pelo ID.
         /// </summary>
         /// <param name="id"></param>
-        /// <param name="status"></param>
         /// <param name="venda">Aqui representada somente pelo campo a ser alterado.</param>
         /// <returns>A Venda Completa com seus Itens e dados do Vendedor.</returns>
         /// <remarks>
@@ -65,15 +64,15 @@ namespace tech_test_payment_api.Payment.Api.Controllers
         /// <response code="204">Quando a Venda é atualizada com Sucesso.</response>
         /// <response code="404">Quando a Venda ou seus Itens não são encontrados.</response>
         /// <response code="400">Quando ocorre algum problema ao Alterar a Venda ou seus Itens ou alguma Regra de Negócio é infrigida.</response>
-        [HttpPatch("{id}")]
+        [HttpPatch("atualizarvenda/{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AttualizarStatusDaVenda(int id,[FromBody] JsonPatchDocument<Venda> venda)
+        public async Task<IActionResult> AttualizarVenda(int id,[FromBody] JsonPatchDocument<Venda> venda)
         {
             if (venda == null)
             {
-                return BadRequest();
+                return BadRequest(new {Erro = "Modelo de Venda inválido."});
             }
 
             var bancoVenda = await _repository.GetByIdAsync(id);
@@ -83,11 +82,9 @@ namespace tech_test_payment_api.Payment.Api.Controllers
                 return NotFound(new {Erro = $"Venda não encontrada para o Id {id}."});
             }
 
-            EnumStatus status = (EnumStatus)venda.Operations[0].value;
-            //var vendaSerialized = JsonConvert.SerializeObject(venda);
-            //var vendaDeserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(vendaSerialized);
-
-                       
+            int statusInteiro = Convert.ToInt32(venda.Operations[0].value);
+            EnumStatus status = (EnumStatus)statusInteiro;
+                                  
             //Verifica o Status Informado.
             switch (bancoVenda.Status)
             {
@@ -104,15 +101,14 @@ namespace tech_test_payment_api.Payment.Api.Controllers
                 case EnumStatus.EnviandoParaTransportadora:
                      if (status != EnumStatus.Entregue)
                         return BadRequest(new { Erro = "Para vendas que foram Enviadas para Transportadora, " +
-                                                        "só é possível Enviar para Transportadora ou Cancelar a venda." });                              
+                                                        "só é possível Entregar a venda." });                              
                 break;
                 case EnumStatus.Entregue:
                     return BadRequest(new { Erro = "Os itens dessa Venda já foram entregues e a Venda finalizada, " +
                                                         "Não é possivel altera-la." });                              
-                //break;
+
                 case EnumStatus.Cancelada:
                     return BadRequest(new { Erro = "Esta Venda foi Cancelada, Não é possivel altera-la." });                              
-               // break;
             }
 
              venda.ApplyTo(bancoVenda, ModelState);
@@ -127,84 +123,7 @@ namespace tech_test_payment_api.Payment.Api.Controllers
             return NoContent();
 
         }
-
-
-
-        /// <summary>
-        /// Altera a  Venda pelo ID indicado.
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="venda">Aqui representada a Venda a ser alterada.</param>
-        /// <response code="204">Quando a Venda é atualizada com Sucesso.</response>
-        /// <response code="404">Quando a Venda ou seus Itens não são encontrados.</response>
-        /// <response code="400">Quando ocorre algum problema ao Alterar a Venda ou seus Itens ou alguma Regra de Negócio é infrigida.</response>
-        [HttpPut("{id}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AtualizarVenda(int id, Venda venda)
-        {
-            if (id != venda.Id)
-            {
-                return BadRequest(new {Erro = $"O Id {id} informado não é válido!"});
-            }
-
-            //Busca Venda do BD
-            var vendaBanco = await _repository.GetByIdAsync(id);
-            if (vendaBanco == null)
-            {
-                return NotFound(new {Erro = $"Venda não encontrada para o Id {id}."});
-            }
-
-            //Verifica o Status Informado.
-            switch (vendaBanco.Status)
-            {
-                case EnumStatus.AguardandoPagamento:
-                     if (venda.Status != EnumStatus.PagamentoAprovado && venda.Status != EnumStatus.Cancelada)
-                        return BadRequest(new { Erro = "Para vendas que estão Aguardando Pagamento, " + 
-                                                        "só é possível Aprovar o pagamento ou Cancelar a venda." });
-                break;
-                case EnumStatus.PagamentoAprovado:
-                     if (venda.Status != EnumStatus.EnviandoParaTransportadora && venda.Status != EnumStatus.Cancelada)
-                        return BadRequest(new { Erro = "Para vendas que tiveram o Pagamento Aprovado, " +
-                                                        "só é possível Enviar para Transportadora ou Cancelar a venda." });                              
-                break;
-                case EnumStatus.EnviandoParaTransportadora:
-                     if (venda.Status != EnumStatus.Entregue)
-                        return BadRequest(new { Erro = "Para vendas que foram Enviadas para Transportadora, " +
-                                                        "só é possível Enviar para Transportadora ou Cancelar a venda." });                              
-                break;
-                case EnumStatus.Entregue:
-                    return BadRequest(new { Erro = "Os itens dessa Venda já foram entregues e a Venda finalizada, " +
-                                                        "Não é possivel altera-la." });                              
-                //break;
-                case EnumStatus.Cancelada:
-                    return BadRequest(new { Erro = "Esta Venda foi Cancelada, Não é possivel altera-la." });                              
-               // break;
-            }
-
-           //Caso O Status esteja correto, atualiza a Venda com o novo Status.
-           vendaBanco.Vendedores = venda.Vendedores;
-           vendaBanco.ItensDaVenda = venda.ItensDaVenda;
-           vendaBanco.Total = venda.Total;
-           vendaBanco.Status = venda.Status;
-           vendaBanco.Data = venda.Data;
-
-            //Atualiza a Venda.
-            _repository.Update(vendaBanco);
-
-            try
-            {
-                await _repository.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                throw;
-            }
-
-            return NoContent();
-        }
-
+     
         /// <summary>
         /// Inclui uma nova venda, com informações do Vendedor e Itens da Venda e seu produto.
         /// </summary>
@@ -215,42 +134,34 @@ namespace tech_test_payment_api.Payment.Api.Controllers
         ///
         ///     POST /Venda
         ///      {
-        ///          "id": 0,
         ///          "vendedores": 
         ///          {
-        ///              "id": 0,
         ///              "nome": "Vendedor 01",
         ///              "cpf": "111.222.333-44",
-        ///              "email": "user@example.com",
-        ///              "telefone": "5454-5445",
-        ///              "vendaID": 0
+        ///              "email": "user@pottencial.com.br",
+        ///              "telefone": "5454-5445"
         ///          },
         ///          "itensDaVenda": 
         ///          [
         ///              {
-        ///                  "id": 0,
         ///                  "quantidade": 2,
-        ///                  "valor": 12600.00,
-        ///                  "vendaID": 0,
+        ///                  "valor": 1250.00,
         ///                  "produto": 
         ///                  {
-        ///                      "id": 0,
         ///                      "nome": "Seguro Residencial",
         ///                      "quantidade": 100,
-        ///                      "valor": 6300.00
+        ///                      "valor": 1250.00
         ///                  }
         ///               }
         ///          ],
-        ///          "total": 12300.00,
-        ///          "status": "AguardandoPagamento",
-        ///          "data": "2022-12-28T20:21:38.819Z"
+        ///          "total": 2500.00
         ///      }
         ///
         /// </remarks>
         /// <response code="201">Retorna Venda e seus Items que acabaram de ser cadastrados.</response>
         /// <response code="400">Quando Ocorre algum erro com a Venda ou seus Itens ou alguma regra de negócio é infrigida.</response>
        
-        [HttpPost]
+        [HttpPost("registrarvenda/")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<Venda>> RegistrarVenda(Venda venda)

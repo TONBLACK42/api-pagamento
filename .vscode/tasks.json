@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/tech-test-payment-api.csproj",
+                "${workspaceFolder}/Payment.Tests/Payment.Tests.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/tech-test-payment-api.csproj",
+                "${workspaceFolder}/Payment.Tests/Payment.Tests.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -33,7 +33,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/tech-test-payment-api.csproj"
+                "${workspaceFolder}/Payment.Tests/Payment.Tests.csproj"
             ],
             "problemMatcher": "$msCompile"
         }

@@ -2,7 +2,7 @@ using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace tech_test_payment_api.Payment.Api.Models
+namespace tech_test_payment_api.Payment.Api.Helpers
 {
     public class AddSchemaExample : ISchemaFilter
     {

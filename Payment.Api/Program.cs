@@ -7,9 +7,9 @@ using tech_test_payment_api.Payment.Api.Context; //Adicionei para Registro do Co
 using Microsoft.OpenApi.Models; //Para Personalizar e Estender o Swagger.
 using System.Text.Json.Serialization;// Para Converter Enum Inteiro em String.
 using System.Reflection; // Usa Reflections para Configure o Swagger para usar o arquivo XML
-using tech_test_payment_api.Payment.Api.Models; //Permite usar a Classe AddShemaExample para alterar modelo esquema do request.
 using tech_test_payment_api.Payment.Api.Repository.Interfaces;
 using tech_test_payment_api.Payment.Api.Repository;
+using tech_test_payment_api.Payment.Api.Helpers;//Permite usar a Classe AddShemaExample para alterar modelo esquema do request.
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,8 +24,6 @@ builder.Services.AddControllers().AddJsonOptions(opt =>
 //Adiciona e Configura DI para implementação de padrão Repositório
 builder.Services.AddScoped<IBaseRepository, BaseRepository>();
 builder.Services.AddScoped<IVendaRepository, VendaRepository>();
-
-
 
 //Adiciona o contexto de banco de dados ao contêiner de DI.
 //Especifica que o contexto de banco de dados usará um banco de dados 

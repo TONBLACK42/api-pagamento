@@ -17,12 +17,28 @@ namespace tech_test_payment_api.Payment.Api.Models
         [DisplayFormat(DataFormatString = "{0,c}")]
         public double Total { get; set; }
 
+        EnumStatus _status;
         [Required(ErrorMessage ="Status não pode ser nulo!")]
-        public EnumStatus Status { get; set; }
+        public EnumStatus Status 
+        { 
+            get
+            {
+                return _status <=0 ? _status = EnumStatus.AguardandoPagamento: _status;
+            }
+            set { _status = value;}
+        }
 
+        DateTime _data;
         [Required(ErrorMessage ="Data não pode ser nulo!")]
         [DisplayFormat(DataFormatString = "{0,d}")]
-        public DateTime Data { get; set; }
+        public DateTime Data
+        { 
+              get 
+              { 
+                return DateTime.Compare(_data,new DateTime()) == 0 ?  _data = DateTime.Now: _data;
+              } 
+              set { _data = value;}
+        }
 
     }
 }
