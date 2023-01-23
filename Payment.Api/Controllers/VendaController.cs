@@ -64,10 +64,12 @@ namespace tech_test_payment_api.Payment.Api.Controllers
         /// <response code="204">Quando a Venda é atualizada com Sucesso.</response>
         /// <response code="404">Quando a Venda ou seus Itens não são encontrados.</response>
         /// <response code="400">Quando ocorre algum problema ao Alterar a Venda ou seus Itens ou alguma Regra de Negócio é infrigida.</response>
+        /// <response code="500">Quando ocorre algum problema no lado do Servidor</response>
         [HttpPatch("atualizarvenda/{id}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> AttualizarVenda(int id,[FromBody] JsonPatchDocument<Venda> venda)
         {
             if (venda == null)

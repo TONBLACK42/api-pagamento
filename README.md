@@ -1,3 +1,15 @@
+## INSTRUÇÕES PARA VALIDAR O TESTE TÉCNICO
+
+- Afim de fornecer evidências suficientes de que minha solução esta completa, estou disponibilizando um link para um vídeo demonstrativo no youtube:
+  
+
+<div align="center">
+  <a href="https://youtu.be/4-O2PV1JUxs">
+    <img alt="digitando_mesa_cafe" align="center " width="350px" alt="GIF" src="https://github.com/TONBLACK42/TONBLACK42/blob/main/img/mao_cafe.gif?raw=true"/>
+  </a>
+</div>
+
+
 ## INSTRUÇÕES PARA O TESTE TÉCNICO
 
 - Crie um fork deste projeto (https://gitlab.com/Pottencial/tech-test-payment-api/-/forks/new). É preciso estar logado na sua conta Gitlab;
