@@ -1,6 +1,6 @@
 ## PROJETO: API DE PAGAMENTO.
 
-- Afim de demonstrar o projeto em funcionamente e falar um pouco mais da abordagem e tecnologias utilizadas, estou disponibilizando um link para um vídeo demonstrativo disponível em meu canal no youtube (Click no Gif abaixo 👇🏿):
+- Afim de apresentar o projeto em funcionamento e falar um pouco mais da abordagem e tecnologias utilizadas, disponibilizo um link para um vídeo demonstrativo disponível em meu canal no youtube (Click no Gif abaixo 👇🏿):
   
 
 <div align="center">
