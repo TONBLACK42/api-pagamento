@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>tech_test_payment_api.Payment.Api.Payment.Api</RootNamespace>
+    <RootNamespace>api_pagamento.Pagamento.Api.Pagamento.Api</RootNamespace>
 
     <!--Habilita Documentação XML inclusive para usar no Swagger-->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

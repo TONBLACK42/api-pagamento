@@ -3,13 +3,13 @@
 // O contêiner fornece o serviço aos controladores.
 
 using Microsoft.EntityFrameworkCore; //Adicionei para Registro do Contexto
-using tech_test_payment_api.Payment.Api.Context; //Adicionei para Registro do Contexto
+using api_pagamento.Pagamento.Api.Context; //Adicionei para Registro do Contexto
 using Microsoft.OpenApi.Models; //Para Personalizar e Estender o Swagger.
 using System.Text.Json.Serialization;// Para Converter Enum Inteiro em String.
 using System.Reflection; // Usa Reflections para Configure o Swagger para usar o arquivo XML
-using tech_test_payment_api.Payment.Api.Repository.Interfaces;
-using tech_test_payment_api.Payment.Api.Repository;
-using tech_test_payment_api.Payment.Api.Helpers;//Permite usar a Classe AddShemaExample para alterar modelo esquema do request.
+using api_pagamento.Pagamento.Api.Repository.Interfaces;
+using api_pagamento.Pagamento.Api.Repository;
+using api_pagamento.Pagamento.Api.Helpers;//Permite usar a Classe AddShemaExample para alterar modelo esquema do request.
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,7 +42,7 @@ builder.Services.AddSwaggerGen(opt =>
     opt.SwaggerDoc("v1", new OpenApiInfo
     {
             Version = "v1",
-            Title = "PAYMENT API",
+            Title = "API DE PAGAMENTO",
             Description = "Web API ASP .NET 6 para gerenciar Vendas.",
             Contact = new OpenApiContact
             {

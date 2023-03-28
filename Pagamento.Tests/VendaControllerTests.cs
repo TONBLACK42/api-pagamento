@@ -1,14 +1,14 @@
 using System.Threading.Tasks;
 using Xunit;
 using Moq; // Usar o Mock para teste.
-using tech_test_payment_api.Payment.Api.Repository.Interfaces;
-using tech_test_payment_api.Payment.Api.Controllers;
+using api_pagamento.Pagamento.Api.Repository.Interfaces;
+using api_pagamento.Pagamento.Api.Controllers;
 using Microsoft.AspNetCore.Mvc;
-using tech_test_payment_api.Payment.Api.Models;
+using api_pagamento.Pagamento.Api.Models;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.JsonPatch;
 
-namespace tech_test_payment_api.Payment.Payment.Tests;
+namespace tech_test_payment_api.Payment.Pagamento.Tests;
 
 public class VendaControllerTests
 {

@@ -1,4 +1,4 @@
-namespace tech_test_payment_api.Payment.Api.Models
+namespace api_pagamento.Pagamento.Api.Models
 {
     public enum EnumStatus
     {

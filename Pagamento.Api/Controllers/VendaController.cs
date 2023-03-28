@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using tech_test_payment_api.Payment.Api.Models;
+using api_pagamento.Pagamento.Api.Models;
 
 using Microsoft.AspNetCore.JsonPatch; //Adicionei para usar HttpPatch
-using tech_test_payment_api.Payment.Api.Repository.Interfaces; //Adicionada para Padrão Repositorio
+using api_pagamento.Pagamento.Api.Repository.Interfaces; //Adicionada para Padrão Repositorio
 using Newtonsoft.Json;
 
-namespace tech_test_payment_api.Payment.Api.Controllers
+namespace api_pagamento.Pagamento.Api.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

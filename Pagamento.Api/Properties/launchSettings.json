@@ -9,7 +9,7 @@
     }
   },
   "profiles": {
-    "tech_test_payment_api.Payment.Api": {
+    "api_pagamento.Pagamento.Api": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,

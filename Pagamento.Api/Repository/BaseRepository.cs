@@ -1,7 +1,7 @@
-using tech_test_payment_api.Payment.Api.Context;
-using tech_test_payment_api.Payment.Api.Repository.Interfaces;
+using api_pagamento.Pagamento.Api.Context;
+using api_pagamento.Pagamento.Api.Repository.Interfaces;
 
-namespace tech_test_payment_api.Payment.Api.Repository
+namespace api_pagamento.Pagamento.Api.Repository
 {
     public class BaseRepository : IBaseRepository
     {
